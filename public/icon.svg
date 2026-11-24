@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Full-bleed dark square: Google crops it to a dark circle. The F sits in the central 60%. -->
+  <rect width="512" height="512" fill="#171717"/>
+  <path fill="#ffffff" d="M176 140h176v62H244v54h92v60h-92v80h-68z"/>
+</svg>

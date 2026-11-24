@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+>
+    <testsuites>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <env name="BCRYPT_ROUNDS" value="4"/>
+        <env name="CACHE_STORE" value="array"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="MAIL_MAILER" value="array"/>
+        <env name="PULSE_ENABLED" value="false"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="TELESCOPE_ENABLED" value="false"/>
+        <!-- The suite tests the hosted service with invented operator facts (config/legal.php); the
+             production server sets the real ones in its .env. The hosting provider and place match the
+             hosted legal pages (resources/legal/*.md), which AgentParityTest checks against config.
+             tests/Feature/SelfHostedModeTest.php switches to self_hosted itself, before the app boots. -->
+        <env name="FORMHAVEN_MODE" value="hosted" force="true"/>
+        <env name="ALLOW_REGISTRATION" value="false" force="true"/>
+        <env name="LEGAL_ENTITY" value="Example Forms B.V." force="true"/>
+        <env name="LEGAL_KVK" value="12345678" force="true"/>
+        <env name="LEGAL_COUNTRY_EN" value="the Netherlands" force="true"/>
+        <env name="LEGAL_COUNTRY_NL" value="Nederland" force="true"/>
+        <env name="LEGAL_COUNTRY_DE" value="den Niederlanden" force="true"/>
+        <env name="LEGAL_HOSTING_PROVIDER" value="Hetzner Online GmbH" force="true"/>
+        <env name="LEGAL_HOSTING_PLACE_EN" value="Falkenstein, Germany" force="true"/>
+        <env name="LEGAL_HOSTING_PLACE_NL" value="Falkenstein, Duitsland" force="true"/>
+        <env name="LEGAL_HOSTING_PLACE_DE" value="Falkenstein, Deutschland" force="true"/>
+        <env name="LEGAL_MAILER" value="Cloudflare, Inc." force="true"/>
+    </php>
+</phpunit>

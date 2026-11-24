@@ -1,0 +1,56 @@
+name: linter
+
+on:
+  push:
+    branches:
+      - main
+    # Commits that only touch root notes, docs or brand files skip the run: none of them is
+    # served. Markdown the site renders (resources/**) still runs.
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - 'brand/**'
+  pull_request:
+    branches:
+      - main
+    # Commits that only touch root notes, docs or brand files skip the run: none of them is
+    # served. Markdown the site renders (resources/**) still runs.
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+      - 'brand/**'
+
+permissions:
+  contents: read
+
+
+# A newer push to the same branch cancels the run it replaces.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Install Dependencies
+        run: |
+          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+          npm install
+
+      - name: Run Pint
+        run: vendor/bin/pint
+
+      # - name: Commit Changes
+      #   uses: stefanzweifel/git-auto-commit-action@v5
+      #   with:
+      #     commit_message: fix code style
+      #     commit_options: '--no-verify'
+      #     file_pattern: '!.github/workflows/* **/*'

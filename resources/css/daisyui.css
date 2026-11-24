@@ -1,0 +1,165 @@
+/*
+    daisyUI, wired to this project's palette.
+
+    Imported from app.css. Keeping it in its own file rather than pasting it in
+    there is deliberate: app.css is where a project's own brand ramps live and
+    grows over time, and this block is a settings file for a dependency. It also
+    means a project can re-copy the stub without touching anything hand-written.
+
+    Verified: `@plugin` resolves inside a nested `@import`, and the built CSS is
+    byte-identical to declaring it in the entry file (checked 2026-09-08 by
+    building both ways and comparing the output hash).
+
+    ── Fill this in ──────────────────────────────────────────────────────────
+    The colour values below are placeholders pointing at Tailwind's zinc and
+    indigo. Point them at the ramps this project actually defines in app.css.
+    Alias them (`var(--color-brand-600)`), never paste a hex: two systems
+    reading one variable cannot drift, two sets of hand-copied values always do.
+*/
+
+/*
+    **The exclusions are what make this safe to add to an existing codebase.**
+    Left on, daisyUI writes five things at :root that reach every view already
+    written:
+
+      reset             re-declares `border: 0 solid`, which outranks a
+                        border-color default set in @layer base and turns every
+                        uncoloured border to currentColor
+      rootcolor         paints :root from --color-base-100 / base-content
+      rootscrolllock    writes `overflow` onto :root
+      rootscrollgutter  adds a background-image and a transition to :root
+      scrollbar         recolours every scrollbar on the site
+
+    <body> already owns the page background and Tailwind's preflight already
+    owns the reset, so none of it is wanted. Excluded, daisyUI contributes
+    component classes and nothing else. That is what lets it go into a mature
+    project with no migration of the utilities already there: on another
+    project a content page rendered byte-identical before and after.
+
+    Cost: +14.3 kB gzip measured on a mature codebase, and NOT "all 68
+    components". daisyUI 5 runs through Tailwind's content scanner, so a
+    component ships only when its name turns up in a scanned file, and **the
+    scanner matches bare words rather than class attributes**: one `alert`
+    inside an ordinary PHP identifier pulled the entire alert component in.
+    Most of that 14 kB is components nothing renders, dragged in by English
+    words in comments and code.
+
+    `include:` (same filenames as `exclude`) would trim that, and is
+    deliberately not used. Without it, usage is self-healing: writing
+    `class="btn"` puts the word in the source, so the component ships with
+    nothing to register. With it, a component you use but forgot to list
+    renders as nothing, with no build error and no console error. That trades a
+    debugging session for 14 kB, and it lands on whoever adds the next
+    component rather than on whoever chose this.
+
+    Verified rather than reasoned about: `btn` is the one component name absent
+    from that codebase, `.btn{` was correspondingly missing from the build while
+    `.alert{`, `.menu{` and `.tabs{` were present, and adding the literal string
+    inside a Blade *comment* put it back and added 4.06 kB.
+*/
+@plugin 'daisyui' {
+    themes: false;
+    logs: false;
+    exclude: reset, rootcolor, rootscrolllock, rootscrollgutter, scrollbar;
+}
+
+/*
+    **`@theme static`, not `:root`.** Two silent failures are being avoided at
+    once, and each one builds clean and renders a page.
+
+    A plain `:root` block defines the variables but generates no Tailwind
+    utilities, so daisyUI components would be themed while `bg-base-100` and
+    `text-base-content` stayed unknown class names in a Blade file: the library
+    and the views reading two different colour systems.
+
+    A non-static `@theme` block fixes that and introduces the other half:
+    Tailwind v4 emits a theme variable only when something it can *see* uses
+    one, and daisyUI reads these from inside its own compiled CSS where the
+    scanner cannot look. They compile away, and every component renders
+    unpainted. `static` keeps them in :root unconditionally.
+*/
+@theme static {
+    --color-base-100: var(--color-white);
+    --color-base-200: var(--color-zinc-50);
+    --color-base-300: var(--color-zinc-200);
+    --color-base-content: var(--color-zinc-900);
+
+    --color-primary: var(--color-indigo-600);
+    --color-primary-content: var(--color-white);
+    --color-secondary: var(--color-zinc-700);
+    --color-secondary-content: var(--color-white);
+    --color-neutral: var(--color-zinc-900);
+    --color-neutral-content: var(--color-zinc-50);
+
+    /*
+        Status colours. Keep error red and success green (an error that is not
+        red is a usability bug) and resist inventing hues for the rest: `info`
+        defaulting to the brand adds nothing new to the palette, where
+        daisyUI's own sky blue would be a colour appearing nowhere else in the
+        product.
+    */
+    --color-info: var(--color-indigo-600);
+    --color-info-content: var(--color-white);
+    --color-success: var(--color-green-600);
+    --color-success-content: var(--color-white);
+    --color-warning: var(--color-amber-600);
+    --color-warning-content: var(--color-white);
+    --color-error: var(--color-red-600);
+    --color-error-content: var(--color-white);
+
+    /* Match the radii already used in this project's views, not daisyUI's defaults. */
+    --radius-box: 0.75rem;
+    --radius-field: 0.5rem;
+    --radius-selector: 0.375rem;
+
+    --size-field: 0.25rem;
+    --size-selector: 0.25rem;
+    --border: 1px;
+
+    /*
+        daisyUI 5 defaults --depth to 1, which puts an inner highlight and a
+        gradient on buttons and badges. 0 unless this project's design is
+        actually three-dimensional: otherwise the treatment announces the
+        library on every surface it touches.
+    */
+    --depth: 0;
+    --noise: 0;
+}
+
+/*
+    color-scheme is a real property, not a custom one, so it cannot live in
+    @theme. daisyUI's checkbox, radio and range render through the native
+    control and read it.
+*/
+:root {
+    color-scheme: light;
+}
+
+/*
+    The dark half. `.dark` here assumes the starter kit's class-based dark mode
+    (`@custom-variant dark (&:where(.dark, .dark *))` in app.css). If this
+    project switches on `prefers-color-scheme` instead, move these into a media
+    query; if it is light-only, delete the block rather than leave it lying.
+
+    Inside @layer theme so it lands in the same layer as the generated theme
+    output above and wins on source order. A bare `.dark` rule also works
+    (unlayered beats layered), but staying in one layer keeps the cascade
+    readable.
+*/
+@layer theme {
+    .dark {
+        color-scheme: dark;
+
+        --color-base-100: var(--color-zinc-950);
+        --color-base-200: var(--color-zinc-900);
+        --color-base-300: var(--color-zinc-800);
+        --color-base-content: var(--color-zinc-100);
+
+        --color-primary: var(--color-indigo-600);
+        --color-primary-content: var(--color-white);
+        --color-secondary: var(--color-zinc-300);
+        --color-secondary-content: var(--color-zinc-900);
+        --color-neutral: var(--color-zinc-100);
+        --color-neutral-content: var(--color-zinc-900);
+    }
+}

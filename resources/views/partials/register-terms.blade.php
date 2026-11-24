@@ -1,0 +1,2 @@
+<flux:checkbox wire:model="terms" id="terms" name="terms" label="I accept the terms of service and the data processing agreement, and have read the privacy policy." />
+        <p class="-mt-4 text-sm text-zinc-500">Read the <a href="{{ route('legal', 'terms') }}" target="_blank" class="underline">terms</a>, <a href="{{ route('legal', 'dpa') }}" target="_blank" class="underline">data processing agreement</a> and <a href="{{ route('legal', 'privacy') }}" target="_blank" class="underline">privacy policy</a>.</p>

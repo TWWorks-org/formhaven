@@ -1,0 +1,116 @@
+# /etc/caddy/Caddyfile: production Caddy config for a Laravel app.
+#
+# Replace `example.com` with your domain and /var/www/formhaven with your app path.
+# After editing: sudo systemctl reload caddy
+#
+# SSL CERT: Two paths depending on your firewall posture:
+#
+# A) Let's Encrypt auto-provision (default): Caddy provisions a free cert via
+#    HTTP-01 challenge on port 80. Requires the firewall to allow port 80 from
+#    at least Let's Encrypt's IPs during provisioning AND every 60 days for
+#    renewal. Not compatible with a firewall that drops port 80.
+#
+# B) Cloudflare Origin Certificate (recommended when behind Cloudflare): a
+#    15-year cert signed by CF's private CA. Works without port 80. Add the
+#    `tls /etc/caddy/origin.crt /etc/caddy/origin.key` directive inside the
+#    site block (commented below) and disable Let's Encrypt for that site.
+#    Set Cloudflare SSL mode to "Full (strict)".
+
+# Global options block. Caddy 2.7+ requires `trusted_proxies` to live here
+# (server-level option), NOT inside site blocks. It applies to every site.
+# Without this, Laravel sees Cloudflare's IP in $_SERVER['REMOTE_ADDR']
+# instead of the real visitor IP.
+{
+    servers {
+        # Cloudflare's published ranges (cloudflare.com/ips). Refresh them when
+        # Cloudflare adds ranges, so per-IP rate limiting keeps seeing real
+        # visitor IPs. The START/END markers let a script replace the block.
+        # CF-TRUSTED-PROXIES-START
+        trusted_proxies static \
+            173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 \
+            141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 \
+            197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 \
+            104.24.0.0/14 172.64.0.0/13 131.0.72.0/22 \
+            2400:cb00::/32 2606:4700::/32 2803:f800::/32 2405:b500::/32 \
+            2405:8100::/32 2a06:98c0::/29 2c0f:f248::/32
+        # CF-TRUSTED-PROXIES-END
+        client_ip_headers X-Forwarded-For
+    }
+}
+
+example.com, www.example.com {
+    # Uncomment ONE of these. Default: Let's Encrypt auto-provisions (needs port 80 open).
+    # tls /etc/caddy/origin.crt /etc/caddy/origin.key
+
+    root * /var/www/formhaven/current/public
+
+    # PHP via FPM: Caddy talks to PHP-FPM over the Unix socket (match your PHP version)
+    php_fastcgi unix//run/php/php8.5-fpm.sock
+
+    # Serve static files directly; only fall through to PHP for unknown paths
+    file_server
+
+    # Compression
+    encode zstd gzip
+
+    # Redirect www to apex
+    @www host www.example.com
+    redir @www https://example.com{uri} 301
+
+    # Cache static assets aggressively (Laravel uses content hashes in filenames)
+    @static path /build/* /img/* /favicon.ico
+    header @static Cache-Control "public, max-age=31536000, immutable"
+
+    # SEO files change at stable URLs: short cache only. With `immutable`
+    # here, Cloudflare's edge would serve a stale robots.txt (e.g., an old
+    # AI-crawler policy) for up to a year after you change it.
+    @seofiles path /robots.txt /sitemap.xml /llms.txt
+    header @seofiles Cache-Control "public, max-age=3600"
+
+    # Security headers
+    header {
+        # HSTS: only safe to enable once you're committed to HTTPS forever.
+        # Ramp it up: start at max-age=300, check nothing breaks, then grow
+        # it to a year over a few weeks before shipping this line.
+        # Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        # Remove server fingerprinting
+        -Server
+        -X-Powered-By
+    }
+
+    # Block dotfiles and common attack paths
+    @blocked {
+        path /.env* /.git/* /.htaccess /vendor/* /storage/* /node_modules/*
+    }
+    respond @blocked 404
+
+    # Health checks: Laravel answers /up, and /up/scheduler answers 503 once
+    # the scheduler has not run for ten minutes. Point an uptime monitor at both.
+
+    # Access log to syslog (Caddy's default); use `caddy reload` after changes
+    log {
+        output stderr
+        format console
+        level INFO
+    }
+}
+
+# Optional: staging / preview subdomain
+# staging.example.com {
+#     root * /var/www/formhaven-staging/current/public
+#     php_fastcgi unix//run/php/php8.5-fpm.sock
+#     file_server
+#     encode zstd gzip
+#     # Never let staging get indexed. basicauth already blocks crawlers,
+#     # this is belt-and-braces (the app middleware sends it too when
+#     # APP_ENV != production).
+#     header X-Robots-Tag "noindex, nofollow"
+#     basicauth {
+#         # generate with: caddy hash-password
+#         admin $2a$14$<hash>
+#     }
+# }

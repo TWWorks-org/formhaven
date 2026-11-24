@@ -1,0 +1,82 @@
+@import 'tailwindcss';
+@import './daisyui.css';
+@import '../../vendor/livewire/flux/dist/flux.css';
+
+@source "../views";
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --color-zinc-50: #fafafa;
+    --color-zinc-100: #f5f5f5;
+    --color-zinc-200: #e5e5e5;
+    --color-zinc-300: #d4d4d4;
+    --color-zinc-400: #a3a3a3;
+    --color-zinc-500: #737373;
+    --color-zinc-600: #525252;
+    --color-zinc-700: #404040;
+    --color-zinc-800: #262626;
+    --color-zinc-900: #171717;
+    --color-zinc-950: #0a0a0a;
+
+    --color-accent: var(--color-neutral-800);
+    --color-accent-content: var(--color-neutral-800);
+    --color-accent-foreground: var(--color-white);
+}
+
+@layer theme {
+    .dark {
+        --color-accent: var(--color-white);
+        --color-accent-content: var(--color-white);
+        --color-accent-foreground: var(--color-neutral-800);
+    }
+}
+
+@layer base {
+
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+[data-flux-field] {
+    @apply grid gap-2;
+}
+
+[data-flux-label] {
+    @apply  !mb-0 !leading-tight;
+}
+
+input:focus[data-flux-control],
+textarea:focus[data-flux-control],
+select:focus[data-flux-control] {
+    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+}
+
+/* \[:where(&)\]:size-4 {
+    @apply size-4;
+} */
+
+/* Legal pages are rendered from Markdown (resources/legal), so style the elements directly. */
+.legal h1 { @apply text-3xl font-semibold tracking-tight sm:text-4xl; }
+.legal h2 { @apply mt-10 text-xl font-semibold; }
+.legal p, .legal ul { @apply mt-4 leading-relaxed text-zinc-700; }
+.legal ul { @apply list-disc pl-6; }
+.legal li + li { @apply mt-1.5; }
+.legal a { @apply underline; }
+.legal table { @apply mt-5 block w-full overflow-x-auto text-left text-sm; }
+.legal th { @apply border-b border-zinc-300 py-2 pr-4 font-medium; }
+.legal td { @apply border-b border-zinc-200 py-2 pr-4 align-top text-zinc-700; }

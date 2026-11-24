@@ -1,0 +1,83 @@
+/.phpunit.cache
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+.DS_Store
+.env
+.env.backup
+.env.production
+.phpactor.json
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+
+# Project additions
+
+# Secrets: never commit
+.env
+.env.local
+.env.production
+*.pem
+*.key
+*.crt
+caddy/origin.*
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*~
+
+# Backups + local databases (template scaffolds these but they're machine-local)
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite.gz
+backups/
+
+# Composer / dependency directories (in actual Laravel projects these would be ignored;
+# this template doesn't ship them but adding here for the copy-paste case)
+vendor/
+# Published Laravel views are our own code (the mail theme), not dependencies.
+!resources/views/vendor/
+node_modules/
+public/build/
+
+# Phpstorm/JetBrains
+.phpunit.result.cache
+.phpunit.cache/
+
+# Litestream local state (it stores some metadata in /var/lib by default)
+litestream-data/
+
+# Claude Code per-user permissions (project-wide .claude/settings.json IS committed)
+.claude/settings.local.json
+
+# Playwright-MCP browser snapshots: auto-generated, large, project-local
+.playwright-mcp/
+
+# Auto-memory directory for Claude Code (machine-local)
+memory/
+*-candidates.md
